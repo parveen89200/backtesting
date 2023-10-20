@@ -28,3 +28,56 @@ cerebro = bt.Cerebro()
 data = bt.feeds.YahooFinanceData(
     dataname="
     #there is the comments
+    #Predicting future stock prices
+    import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+
+# Sample historical stock price data (replace with your data)
+data = {
+    'Date': pd.date_range(start='2020-01-01', periods=100, freq='D'),
+    'Close': np.random.rand(100) * 100 + 100
+}
+
+# Create a DataFrame
+df = pd.DataFrame(data)
+
+# Calculate the number of days in the future for prediction
+days_in_future = 30
+
+# Create a new column for the target (future price)
+df['FuturePrice'] = df['Close'].shift(-days_in_future)
+
+# Drop rows with NaN values (corresponding to the last 30 rows)
+df.dropna(inplace=True)
+
+# Features and target variable
+X = df[['Close']]
+y = df['FuturePrice']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a linear regression model
+model = LinearRegression()
+
+# Fit the model to the training data
+model.fit(X_train, y_train)
+
+# Predict the future stock price
+future_price = model.predict(X_test[-1].values.reshape(1, -1))[0]
+
+print("Predicted Future Price:", future_price)
+
+# Plot the historical and predicted prices
+plt.figure(figsize=(12, 6))
+plt.plot(df['Date'], df['Close'], label='Historical Price')
+plt.axvline(df['Date'].values[-1], color='r', linestyle='--', label='Last Historical Data')
+plt.plot(df['Date'].values[-1] + np.array([0, days_in_future]), [df['Close'].values[-1], future_price], 'g--', label='Predicted Future Price')
+plt.xlabel('Date')
+plt.ylabel('Price')
+plt.legend()
+plt.show()
+
